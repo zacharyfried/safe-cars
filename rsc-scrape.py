@@ -2,12 +2,22 @@ from bs4 import BeautifulSoup
 import requests
 
 # Fetch webpage content
-url = "https://realsafecars.com/suvs/10"
+url = "https://realsafecars.com/sedans/all"
 response = requests.get(url)
 html_content = response.content
 
 # Parse HTML with bs4
 soup = BeautifulSoup(html_content, "html.parser")
+
+pagination_links = soup.find_all("a", class_="MuiPaginationItem-page")
+page_nums = []
+for i in range(len(pagination_links)):
+    page_value =  pagination_links[i].text
+    if page_value == '':
+        continue
+    page_nums.append(int(page_value))
+
+max_pages = max(page_nums)
 
 for row in soup.find_all("tr", class_="Tables__TR-f84ad0-2 dxGljX"):
     cells = row.find_all("td", class_="Tables__TD-f84ad0-3")

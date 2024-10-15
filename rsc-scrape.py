@@ -1,6 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
+import pandas as pd
 
+# Create dataframe to store safety data
+df = pd.DataFrame(columns=['rank', 'suv_model', 'rsc_rating', 'fatality_risk', 'injury_risk'])
 # Fetch webpage content
 url = "https://realsafecars.com/sedans/all"
 response = requests.get(url)
@@ -29,4 +32,14 @@ for row in soup.find_all("tr", class_="Tables__TR-f84ad0-2 dxGljX"):
         fatality_risk = cells[3].get_text(strip=True)
         injury_risk = cells[4].get_text(strip=True)
 
-        print(f"Rank: {rank}, SUV Model: {suv_model}, RSC Rating: {rsc_rating}, Fatality Risk: {fatality_risk}, Injury Risk: {injury_risk}")
+        new_row = pd.DataFrame({
+            'rank': [rank],
+            'suv_model': [suv_model],
+            'rsc_rating': [rsc_rating],
+            'fatality_risk': [fatality_risk],
+            'injury_risk': [injury_risk]
+        })
+
+        df = pd.concat([df, new_row], ignore_index=True)
+
+print(df)

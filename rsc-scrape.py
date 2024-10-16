@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 
 # Create dataframe to store safety data
-df = pd.DataFrame(columns=['rank', 'suv_model', 'rsc_rating', 'fatality_risk', 'injury_risk'])
+df = pd.DataFrame(columns=['rank', 'year', 'make', 'model', 'rsc_rating', 'fatality_risk', 'injury_risk'])
 # Fetch webpage content
 url = "https://realsafecars.com/sedans/all"
 response = requests.get(url)
@@ -27,14 +27,19 @@ for row in soup.find_all("tr", class_="Tables__TR-f84ad0-2 dxGljX"):
     
     if len(cells) >= 5:  # Check that the row has the expected number of cells
         rank = cells[0].get_text(strip=True)
-        suv_model = cells[1].get_text(strip=True)
+        name = cells[1].get_text(strip=True).split()
+        year = name[0]
+        make = name[1]
+        model = name[2:]
         rsc_rating = cells[2].get_text(strip=True)
         fatality_risk = cells[3].get_text(strip=True)
         injury_risk = cells[4].get_text(strip=True)
 
         new_row = pd.DataFrame({
             'rank': [rank],
-            'suv_model': [suv_model],
+            'year': [year],
+            'make': [make],
+            'model': " ".join(name[2:]),
             'rsc_rating': [rsc_rating],
             'fatality_risk': [fatality_risk],
             'injury_risk': [injury_risk]

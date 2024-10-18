@@ -1,4 +1,3 @@
-# Import necessary libraries for web scraping and data manipulation
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
@@ -13,17 +12,7 @@ body_types = ['sedans', 'suvs', 'pickups', 'vans']
 base_url = "https://realsafecars.com/"
 
 def get_soup(body_type, page):
-    """
-    Fetches and parses the HTML content of a webpage.
-
-    Parameters:
-    - body_type (str): Type of vehicle body (e.g., 'sedans', 'suvs')
-    - page (int): Page number to fetch data from
-
-    Returns:
-    - BeautifulSoup object containing parsed HTML content
-    """
-    # Construct the URL based on the body type and page number
+    # Fetch and parse HTML content of a webpage
     if page == 1:
         url_page = "/all"  # First page
     else:
@@ -31,7 +20,6 @@ def get_soup(body_type, page):
 
     url = base_url + f"{body_type}" + url_page
 
-    # Send a GET request to the URL and get the HTML content
     response = requests.get(url)
     html_content = response.content
 
@@ -39,16 +27,7 @@ def get_soup(body_type, page):
     return BeautifulSoup(html_content, "html.parser")
 
 def get_max_pages(body_type):
-    """
-    Finds the maximum number of pages available for a given body type.
-
-    Parameters:
-    - body_type (str): Type of vehicle body
-
-    Returns:
-    - int: Maximum page number found
-    """
-    # Get the soup for the first page to find pagination information
+    # Find the maximum number of pages for a given body type
     soup = get_soup(body_type=body_type, page=1)
     
     # Find all page number links to determine the total number of pages
@@ -66,14 +45,10 @@ def get_max_pages(body_type):
     return max(page_nums)
 
 def add_data_from_page(body_type, page):
-    """
-    Scrapes data from a specific page and appends it to the global DataFrame.
+    # Scrapes data from a specific page and appends it to the global DataFrame.
 
-    Parameters:
-    - body_type (str): Type of vehicle body
-    - page (int): Page number to scrape data from
-    """
     global df
+
     # Get the soup for the current page
     soup = get_soup(body_type=body_type, page=page)
 
@@ -82,7 +57,6 @@ def add_data_from_page(body_type, page):
         # Find all table cells in the row
         cells = row.find_all("td", class_="Tables__TD-f84ad0-3")
 
-        # Check if the row has at least the expected number of cells
         if len(cells) >= 5:
             rank = cells[0].get_text(strip=True)
             
@@ -97,7 +71,6 @@ def add_data_from_page(body_type, page):
             fatality_risk = cells[3].get_text(strip=True)
             injury_risk = cells[4].get_text(strip=True)
 
-            # Create a new DataFrame row with the extracted data
             new_row = pd.DataFrame({
                 'type': [body_type],
                 'rank': [rank],
@@ -109,26 +82,17 @@ def add_data_from_page(body_type, page):
                 'injury_risk': [injury_risk]
             })
 
-            # Append the new row to the global DataFrame
             df = pd.concat([df, new_row], ignore_index=True)
 
 def main():
-    """
-    Main function to iterate through vehicle types and their pages,
-    scraping data and saving it to a CSV file.
-    """
     global df
-    # Iterate over each vehicle body type
+
     for type in body_types:
-        # Get the maximum number of pages for the current body type
         max_pages = get_max_pages(body_type=type)
         
-        # Iterate over each page to scrape data
         for page in range(1, max_pages + 1):
             add_data_from_page(body_type=type, page=page)
     
-    # Save the collected data to a CSV file
     df.to_csv("safety-data.csv")
 
-# Run the main function
 main()

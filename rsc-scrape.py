@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 
 # Create a DataFrame to store the safety data for different vehicle types
-df = pd.DataFrame(columns=['type', 'rank', 'year', 'make', 'model', 'rsc_rating', 'fatality_risk', 'injury_risk'])
+df = pd.DataFrame(columns=['type', 'rank', 'year', 'make', 'model', 'rsc_rating', 'fatality_risk', 'injury_risk', 'edmunds_link'])
 
 # List of vehicle body types to iterate over
 body_types = ['sedans', 'suvs', 'pickups', 'vans']
@@ -84,6 +84,9 @@ def add_data_from_page(body_type, page):
 
             df = pd.concat([df, new_row], ignore_index=True)
 
+def get_edmunds_url(make, model, year):
+    return f"https://www.edmunds.com/{make}/{model}/{year}/cost-to-own/"
+
 def main():
     global df
 
@@ -92,6 +95,11 @@ def main():
         
         for page in range(1, max_pages + 1):
             add_data_from_page(body_type=type, page=page)
+        if type == 'sedans':
+            break
+    
+    for index, row in df.iterrows():
+        df.at[index, 'edmunds_link'] = get_edmunds_url(row['make'], row['model'], row['year'])
     
     df.to_csv("safety-data.csv")
 
